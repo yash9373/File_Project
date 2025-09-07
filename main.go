@@ -1,0 +1,38 @@
+package main
+
+import (
+	"log"
+
+	"file_project/config"
+	"file_project/database"
+	"file_project/routes"
+
+	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/logger"
+	"github.com/gofiber/fiber/v2/middleware/recover"
+)
+
+func main() {
+	config.Load()
+
+	if err := database.Connect(); err != nil {
+		log.Fatalf("failed to connect database: %v", err)
+	}
+
+	app := fiber.New()
+
+	// Middlewares
+	app.Use(recover.New())
+	app.Use(logger.New())
+
+	// Health
+	app.Get("/health", func(c *fiber.Ctx) error { return c.SendString("OK") })
+
+	// Register routes
+	routes.AuthRoutes(app)
+
+	log.Printf("server running on :%s", config.C.AppPort)
+	if err := app.Listen(":" + config.C.AppPort); err != nil {
+		log.Fatal(err)
+	}
+}
