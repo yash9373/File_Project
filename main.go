@@ -39,9 +39,14 @@ func main() {
 	fileSvc := services.NewFileService(fileRepo)
 	fileCtrl := &controllers.FileController{Files: fileSvc}
 
+	shareRepo := repositories.NewShareLinkRepository(database.DB)
+	shareSvc := services.NewShareLinkService(shareRepo)
+	shareCtrl := &controllers.ShareController{Shares: shareSvc, Files: fileSvc}
+
 	// Register routes
 	routes.AuthRoutes(app, authCtrl)
 	routes.FileRoutes(app, fileCtrl)
+	routes.ShareRoutes(app, shareCtrl)
 
 	log.Printf("server running on :%s", config.C.AppPort)
 	if err := app.Listen(":" + config.C.AppPort); err != nil {

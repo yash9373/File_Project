@@ -38,7 +38,7 @@ func Connect() error {
 	DB.Exec("CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\"")
 
 	// Auto-migrate models
-	if err := DB.AutoMigrate(&models.User{}, &models.EncryptedFile{}); err != nil {
+	if err := DB.AutoMigrate(&models.User{}, &models.EncryptedFile{}, &models.ShareLink{}); err != nil {
 		return err
 	}
 
