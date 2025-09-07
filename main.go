@@ -8,6 +8,7 @@ import (
 	"file_project/database"
 	"file_project/repositories"
 	"file_project/routes"
+	"file_project/services"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/logger"
@@ -34,8 +35,13 @@ func main() {
 	userRepo := repositories.NewUserRepository(database.DB)
 	authCtrl := &controllers.AuthController{Users: userRepo}
 
+	fileRepo := repositories.NewFileRepository(database.DB)
+	fileSvc := services.NewFileService(fileRepo)
+	fileCtrl := &controllers.FileController{Files: fileSvc}
+
 	// Register routes
 	routes.AuthRoutes(app, authCtrl)
+	routes.FileRoutes(app, fileCtrl)
 
 	log.Printf("server running on :%s", config.C.AppPort)
 	if err := app.Listen(":" + config.C.AppPort); err != nil {

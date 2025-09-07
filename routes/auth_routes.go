@@ -8,12 +8,8 @@ import (
 )
 
 func AuthRoutes(app *fiber.App, authCtrl *controllers.AuthController) {
-	auth := app.Group("/api/auth") // route group
-
+	auth := app.Group("/api/auth")
 	auth.Post("/register", authCtrl.Register)
 	auth.Post("/login", authCtrl.Login)
-
-	// Protected sub-group
-	me := auth.Group("/me", middleware.JWTProtected)
-	me.Get("/", authCtrl.Me)
+	auth.Get("/me", middleware.JWTProtected, authCtrl.Me)
 }
