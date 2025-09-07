@@ -4,7 +4,9 @@ import (
 	"log"
 
 	"file_project/config"
+	"file_project/controllers"
 	"file_project/database"
+	"file_project/repositories"
 	"file_project/routes"
 
 	"github.com/gofiber/fiber/v2"
@@ -28,8 +30,12 @@ func main() {
 	// Health
 	app.Get("/health", func(c *fiber.Ctx) error { return c.SendString("OK") })
 
+	// Wire repositories and controllers
+	userRepo := repositories.NewUserRepository(database.DB)
+	authCtrl := &controllers.AuthController{Users: userRepo}
+
 	// Register routes
-	routes.AuthRoutes(app)
+	routes.AuthRoutes(app, authCtrl)
 
 	log.Printf("server running on :%s", config.C.AppPort)
 	if err := app.Listen(":" + config.C.AppPort); err != nil {

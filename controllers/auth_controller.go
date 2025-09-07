@@ -3,12 +3,16 @@ package controllers
 import (
 	"strings"
 
-	"file_project/database"
 	"file_project/models"
+	"file_project/repositories"
 	"file_project/utils"
 
 	"github.com/gofiber/fiber/v2"
 )
+
+type AuthController struct {
+	Users repositories.UserRepository
+}
 
 type RegisterRequest struct {
 	Name     string `json:"name"`
@@ -30,7 +34,7 @@ func validatePassword(p string) bool {
 	return len(p) >= 6
 }
 
-func Register(c *fiber.Ctx) error {
+func (a *AuthController) Register(c *fiber.Ctx) error {
 	var body RegisterRequest
 	if err := c.BodyParser(&body); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid json"})
@@ -43,8 +47,7 @@ func Register(c *fiber.Ctx) error {
 	}
 
 	// Check existing user
-	var count int64
-	database.DB.Model(&models.User{}).Where("email = ?", body.Email).Count(&count)
+	count, _ := a.Users.CountByEmail(body.Email)
 	if count > 0 {
 		return c.Status(fiber.StatusConflict).JSON(fiber.Map{"error": "email already registered"})
 	}
@@ -54,7 +57,7 @@ func Register(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "could not hash password"})
 	}
 	user := models.User{Name: body.Name, Email: body.Email, Password: hash}
-	if err := database.DB.Create(&user).Error; err != nil {
+	if err := a.Users.Create(&user); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to create user"})
 	}
 
@@ -65,7 +68,7 @@ func Register(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusCreated).JSON(fiber.Map{"token": token, "user": fiber.Map{"id": user.ID, "name": user.Name, "email": user.Email}})
 }
 
-func Login(c *fiber.Ctx) error {
+func (a *AuthController) Login(c *fiber.Ctx) error {
 	var body LoginRequest
 	if err := c.BodyParser(&body); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid json"})
@@ -75,8 +78,8 @@ func Login(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "validation failed: email/password"})
 	}
 
-	var user models.User
-	if err := database.DB.Where("email = ?", email).First(&user).Error; err != nil {
+	user, err := a.Users.FindByEmail(email)
+	if err != nil {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "invalid credentials"})
 	}
 	if !utils.CheckPasswordHash(user.Password, body.Password) {
@@ -89,7 +92,7 @@ func Login(c *fiber.Ctx) error {
 	return c.JSON(fiber.Map{"token": token})
 }
 
-func Me(c *fiber.Ctx) error {
+func (a *AuthController) Me(c *fiber.Ctx) error {
 	return c.JSON(fiber.Map{
 		"user_id": c.Locals("user_id"),
 		"email":   c.Locals("email"),
