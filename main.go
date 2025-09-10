@@ -11,6 +11,7 @@ import (
 	"file_project/services"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors" // 1. Import the CORS package
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/recover"
 )
@@ -28,6 +29,11 @@ func main() {
 	app.Use(recover.New())
 	app.Use(logger.New())
 
+	app.Use(cors.New(cors.Config{
+		AllowOrigins: "http://localhost:5173", // Replace with your frontend's URL
+		AllowHeaders: "Origin, Content-Type, Accept, Authorization",
+		AllowMethods: "GET, POST, PATCH, DELETE",
+	}))
 	// Health
 	app.Get("/health", func(c *fiber.Ctx) error { return c.SendString("OK") })
 

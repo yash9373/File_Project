@@ -32,11 +32,11 @@ func EncryptBytes(plaintext []byte, password string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	block, err := aes.NewCipher(key)
+	block, err := aes.NewCipher(key) //ase cipher or lock that know hoe to encript but for the limemted size like 16 bite
 	if err != nil {
 		return nil, err
 	}
-	gcm, err := cipher.NewGCM(block)
+	gcm, err := cipher.NewGCM(block) // now ccm make it able to use for big files
 	if err != nil {
 		return nil, err
 	}

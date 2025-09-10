@@ -34,7 +34,7 @@ func (s *FileService) SaveAndEncrypt(ownerID uint, header *multipart.FileHeader,
 		return nil, err
 	}
 	defer src.Close()
-	plain, err := io.ReadAll(src)
+	plain, err := io.ReadAll(src) // row bytes of uploaded file
 	if err != nil {
 		return nil, err
 	}

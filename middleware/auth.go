@@ -25,5 +25,6 @@ func JWTProtected(c *fiber.Ctx) error {
 	// store user info in locals for handlers
 	c.Locals("user_id", claims.UserID)
 	c.Locals("email", claims.Email)
+	c.Locals("name", claims.Name)
 	return c.Next()
 }

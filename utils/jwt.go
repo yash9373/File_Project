@@ -11,14 +11,16 @@ import (
 type Claims struct {
 	UserID uint   `json:"user_id"`
 	Email  string `json:"email"`
+	Name   string `json:"name"`
 	jwt.RegisteredClaims
 }
 
-func GenerateJWT(userID uint, email string) (string, error) {
+func GenerateJWT(userID uint, email string, name string) (string, error) {
 	cfg := config.C
 	claims := Claims{
 		UserID: userID,
 		Email:  email,
+		Name:   name,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Duration(cfg.TokenExpiresInHours) * time.Hour)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),

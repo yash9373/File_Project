@@ -61,7 +61,7 @@ func (a *AuthController) Register(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to create user"})
 	}
 
-	token, err := utils.GenerateJWT(user.ID, user.Email)
+	token, err := utils.GenerateJWT(user.ID, user.Email, user.Name)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to generate token"})
 	}
@@ -85,7 +85,7 @@ func (a *AuthController) Login(c *fiber.Ctx) error {
 	if !utils.CheckPasswordHash(user.Password, body.Password) {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "invalid credentials"})
 	}
-	token, err := utils.GenerateJWT(user.ID, user.Email)
+	token, err := utils.GenerateJWT(user.ID, user.Email, user.Name)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to generate token"})
 	}
@@ -94,6 +94,7 @@ func (a *AuthController) Login(c *fiber.Ctx) error {
 
 func (a *AuthController) Me(c *fiber.Ctx) error {
 	return c.JSON(fiber.Map{
+		"name":    c.Locals("name"),
 		"user_id": c.Locals("user_id"),
 		"email":   c.Locals("email"),
 	})
