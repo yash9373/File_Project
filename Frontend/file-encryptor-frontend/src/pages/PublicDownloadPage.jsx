@@ -1,46 +1,80 @@
 import React, { useState } from "react";
 import { useParams } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
-import { downloadSharedFile } from "../redux/slice/linkslice"; // 👈 add this
+import axios from "axios"; // Import the original axios library
 
-export default function PublicDownloadPage() {
+const PublicDownloadPage = () => {
   const { token } = useParams();
-  const dispatch = useDispatch();
   const [password, setPassword] = useState("");
-  const { loading, error } = useSelector((state) => state.link); // 👈 use "link" slice
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleDownload = async (e) => {
     e.preventDefault();
-    const result = await dispatch(downloadSharedFile({ token, password }));
+    setLoading(true);
+    setError("");
 
-    if (downloadSharedFile.fulfilled.match(result)) {
-      const { blob, filename } = result.payload;
+    try {
+      // **IMPORTANT FIX**: Manually construct the full URL without the `/api` prefix
+      const downloadUrl = `http://localhost:8080/share/${token}/download?password=${password}`;
 
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
+      const response = await axios.get(downloadUrl, {
+        responseType: "blob", // Important for file downloads
+      });
+
+      // Get filename from content-disposition header
+      const contentDisposition = response.headers["content-disposition"];
+      let filename = "downloaded-file"; // fallback filename
+      if (contentDisposition) {
+        const filenameMatch = contentDisposition.match(/filename="(.+)"/);
+        if (filenameMatch.length > 1) {
+          filename = filenameMatch[1];
+        }
+      }
+
+      // Create a link and trigger the download
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", filename);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+
+    } catch (err) {
+      setError(err.response?.data?.error || "Download failed. Check the password or link.");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div>
-      {error && <div>{error}</div>}
+    <div className="container mx-auto mt-10 max-w-md text-center">
+      <h1 className="text-2xl font-bold mb-4">Download Shared File</h1>
+      <p className="mb-4">
+        This file is password protected. Please enter the password to download.
+      </p>
       <form onSubmit={handleDownload}>
-        <input
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          placeholder="Enter password"
-        />
-        <button type="submit" disabled={loading}>
+        <div className="mb-4">
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Enter file password"
+            className="w-full px-3 py-2 border rounded-md"
+            required
+          />
+        </div>
+        {error && <p className="text-red-500 mb-4">{error}</p>}
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600 disabled:bg-gray-400"
+        >
           {loading ? "Downloading..." : "Download"}
         </button>
       </form>
     </div>
   );
-}
+};
+
+export default PublicDownloadPage;

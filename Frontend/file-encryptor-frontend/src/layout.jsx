@@ -140,26 +140,20 @@ export default function Layout() {
         if (window.confirm("Are you sure you want to delete this file?")) {
             dispatch(deleteFile(fileId));
         }
-    };
-const handleShareClick = async (fileId) => {
+    };const handleShareClick = async (fileId) => {
     setSelectedFileId(fileId);
     setShareModalOpen(true);
-    setShareLink("Generating link..."); // Show a loading message
+    setShareLink("Generating link...");
 
     try {
-        const resultAction = await dispatch(createShareLink({ file_id: fileId, expires_in_minutes: 60 }));
+        const resultAction = await dispatch(createShareLink({ file_id: fileId }));
         
         if (createShareLink.fulfilled.match(resultAction)) {
-            // Assumes your API response is: { token: "some_unique_token", ... }
-            const token = resultAction.payload.token; 
-            
-            // Constructs the correct user-facing URL
-            const frontendBaseUrl = window.location.origin; // e.g., "http://localhost:3000"
-            const userFriendlyLink = `${frontendBaseUrl}/share/${token}`;
-
-            setShareLink(userFriendlyLink);
+            // The action payload already contains the full, correct link
+            setShareLink(resultAction.payload.link);
         } else {
-            setShareLink("Failed to generate link.");
+            const errorMessage = resultAction.payload?.error || "Failed to generate link.";
+            setShareLink(errorMessage);
         }
     } catch (err) {
         console.error(err);
