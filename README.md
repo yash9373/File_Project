@@ -83,19 +83,18 @@ The API is designed with RESTful principles, using standard HTTP methods for com
 ## Screenshots
 
 ### Login Page
-![Login Page](uploaded:Screenshot 2025-09-11 211051.png-2da6007e-4128-44f4-bf95-5680ea0a9c39)
+![alt text](<Screenshot 2025-09-11 211051.png>)
 
-### Register Page
-![Register Page](uploaded:Screenshot 2025-09-11 211057.png-75dfeb22-0f53-412e-8b85-342c3375b5bd)
 
 ### Dashboard
-![Dashboard](uploaded:Screenshot 2025-09-11 211104.png-6e483d4b-10c1-465a-9162-71a160e7ed9c)
+![alt text](<Screenshot 2025-09-11 211057.png>)
 
 ### Upload File
-![Upload File](uploaded:Screenshot 2025-09-11 211115.png-c77fcd2a-039a-4189-94b8-2a181ff84469)
+![alt text](<Screenshot 2025-09-11 212022.png>)
 
 ### Share Link Modal
-![Share Link Modal](uploaded:Screenshot 2025-09-11 211122.png-5bf15ff1-415c-4d8a-a458-cc3a36bec6b2)
+![alt text](<Screenshot 2025-09-11 211115.png>)
+![alt text](<Screenshot 2025-09-11 211104.png>)
 
 ---
 
