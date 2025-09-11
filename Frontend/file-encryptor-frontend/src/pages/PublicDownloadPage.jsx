@@ -8,45 +8,50 @@ const PublicDownloadPage = () => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleDownload = async (e) => {
+// From: Frontend/file-encryptor-frontend/src/pages/PublicDownloadPage.jsx
+
+const handleDownload = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError("");
 
     try {
-      // **IMPORTANT FIX**: Manually construct the full URL without the `/api` prefix
       const downloadUrl = `http://localhost:8080/share/${token}/download?password=${password}`;
 
       const response = await axios.get(downloadUrl, {
-        responseType: "blob", // Important for file downloads
+        responseType: "blob",
       });
 
-      // Get filename from content-disposition header
+      // --- THE FILENAME FIX ---
       const contentDisposition = response.headers["content-disposition"];
-      let filename = "downloaded-file"; // fallback filename
+      let filename = "downloaded-file"; // Fallback name
+
       if (contentDisposition) {
+        // This correctly extracts the filename from the header
         const filenameMatch = contentDisposition.match(/filename="(.+)"/);
-        if (filenameMatch.length > 1) {
+        if (filenameMatch && filenameMatch.length > 1) {
           filename = filenameMatch[1];
         }
       }
+      // --- END OF FIX ---
 
-      // Create a link and trigger the download
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement("a");
       link.href = url;
+      // Use the correct, extracted filename here
       link.setAttribute("download", filename);
       document.body.appendChild(link);
       link.click();
+
       link.remove();
+      window.URL.revokeObjectURL(url);
 
     } catch (err) {
-      setError(err.response?.data?.error || "Download failed. Check the password or link.");
+      setError(err.response?.data?.error || "Download failed. Check password or link.");
     } finally {
       setLoading(false);
     }
   };
-
   return (
     <div className="container mx-auto mt-10 max-w-md text-center">
       <h1 className="text-2xl font-bold mb-4">Download Shared File</h1>

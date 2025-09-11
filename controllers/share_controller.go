@@ -53,16 +53,20 @@ func (sc *ShareController) PublicDownload(c *fiber.Ctx) error {
 	if token == "" || pwd == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "token and password required"})
 	}
+
 	l, err := sc.Shares.ValidateAndRecord(token)
 	if err != nil {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": err.Error()})
 	}
+
 	plain, filename, err := sc.Files.DecryptAndRead(l.File.OwnerID, l.FileID, pwd)
 	if err != nil {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "invalid password or file not found"})
 	}
+
 	c.Set("Content-Type", "application/octet-stream")
-	c.Set("Content-Disposition", "attachment; filename=\""+url.QueryEscape(filename)+"\"")
+	c.Set("Content-Disposition", "attachment; filename=\""+filename+"\"")
+
 	return c.Send(plain)
 }
 
